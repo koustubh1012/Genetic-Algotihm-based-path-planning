@@ -17,10 +17,11 @@ size = (30, 50)
 # obstacles = [(5, 5, 10,10), (20, 30, 25, 45), (15, 0, 20, 5), (15, 17, 20, 22)]
 obstacles = [(5, 5, 10, 15), (20, 5, 25, 15), (5, 30, 10, 40), (20, 30, 25, 40), (3, 20, 12, 25), (18, 20, 27, 25)]
 start = (0, 0)
+plot_num = 0
 # goal = (29, 40)
 goal = (29, 35)
 INITIAL_POPULATION_SIZE = 20
-NUMBER_OF_GENERATIONS = 10
+NUMBER_OF_GENERATIONS = 50
 STEP_SIZE = 3
 FPS = 2
 generation_best_fitness = []
@@ -31,7 +32,6 @@ class Node:
     self.y = y
     self.parent_node = None
 
-plot_num = 0
 
 def is_within_obstacles(point, obstacles):
   for (x1, y1, x2, y2) in obstacles:
@@ -39,11 +39,14 @@ def is_within_obstacles(point, obstacles):
       return True
   return False
 
+
 def distance(point1, point2):
   return np.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
+
 def nearest_node(nodes, random_point):
   return min(nodes, key=lambda node: distance((node.x, node.y), random_point))
+
 
 def steer(from_node, to_point, step_size=1):
   if distance((from_node.x, from_node.y), to_point)<step_size:
@@ -51,6 +54,7 @@ def steer(from_node, to_point, step_size=1):
   else:
     theta = np.arctan2(to_point[1]-from_node.y, to_point[0]-from_node.x)
     return Node(from_node.x + step_size*np.cos(theta), from_node.y + step_size*np.sin(theta))
+
 
 """ Check if the path between node1 and node2 is valid by interpolating points along the way. """
 def is_valid_path(node1, node2, obstacles):
@@ -83,6 +87,7 @@ def plot(nodes=None, path=None):
     # plt.show()
     plot_num += 1
 
+
 def rrt(step_size=1, max_nodes=10000):
     nodes = [Node(start[0], start[1])]
     while len(nodes) < max_nodes:
@@ -97,6 +102,7 @@ def rrt(step_size=1, max_nodes=10000):
             if distance((new_node.x, new_node.y), goal) <= 2:#step_size:
                 return nodes, new_node
     return nodes, None  # Return None if max_nodes reached without finding a path
+
 
 def fitness_function(path):
     coordinates = [(node.x, node.y) for node in path]
@@ -123,12 +129,14 @@ def fitness_function(path):
     F = w1*(1/(euc_dist))+ w2*1/(angle_sum)
     return euc_dist, F
 
-def calcualte_fitness_of_population(population):
+
+def calculate_fitness_of_population(population):
   fitness = []
   for index, path in enumerate(population):
     euc_dist, F = fitness_function(path)
     fitness.append(F)
   return fitness
+
 
 def selection(fitness, population):
   P1 = []
@@ -145,6 +153,7 @@ def selection(fitness, population):
     P2.append(population.pop(i))
   return P1, P2
 
+
 def best_selection(fitness, population):
   P1 = []
   P2 = []
@@ -158,8 +167,8 @@ def best_selection(fitness, population):
     index = fitness.index(max_fitness)
     fitness.pop(index)
     P2.append(population.pop(index))
-
   return P1, P2
+
 
 def plot_best_solution(fitness, population, plot_graph=False):
   max_fitness = max(fitness)
@@ -169,6 +178,7 @@ def plot_best_solution(fitness, population, plot_graph=False):
   if plot_graph:
     plot(path=best_path)
   return max_fitness
+
 
 #CrossOver points
 def crossoverpt(parent1,parent2):
@@ -205,6 +215,7 @@ def crossoverpt(parent1,parent2):
     #Returning offsprings
     return offspring1,offspring2
 
+
 def elimination(fitness, population):
   num_eliminations = 2
   for i in range(0, num_eliminations):
@@ -213,6 +224,7 @@ def elimination(fitness, population):
     fitness.pop(index)
     population.pop(index)
   return fitness, population
+
 
 def create_initial_population(population_size=20, step_size=1, plot_paths = True):
   population = []
@@ -230,6 +242,7 @@ def create_initial_population(population_size=20, step_size=1, plot_paths = True
     population.append(path)
   return population
 
+
 def create_opencv_visualisation(parent_gen_size=INITIAL_POPULATION_SIZE, generation_gen_size=100):
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
   video = cv2.VideoWriter("genetic.mp4", fourcc, FPS, (640, 480))
@@ -242,14 +255,16 @@ def create_opencv_visualisation(parent_gen_size=INITIAL_POPULATION_SIZE, generat
       fitness = generation_best_fitness[i-parent_gen_size]
       cv2.putText(image, f"Generation: {i-parent_gen_size+1} | Fitness: {fitness}",(10,40),cv2.FONT_HERSHEY_SIMPLEX,0.8, (0,0,0), 1, cv2.LINE_AA)
     video.write(image)
+  for i in range(20):
+    video.write(image)
 
 population = create_initial_population(population_size=INITIAL_POPULATION_SIZE, step_size=STEP_SIZE, plot_paths=True)
-parent_gen_fitness = calcualte_fitness_of_population(population)
+parent_gen_fitness = calculate_fitness_of_population(population)
 
 for gen in range (0,NUMBER_OF_GENERATIONS):
   print(f"Generation: {gen+1}")
   if population:
-    fitness = calcualte_fitness_of_population(population)
+    fitness = calculate_fitness_of_population(population)
     # fitness, population = elimination(fitness, population)
     best_fitness = plot_best_solution(fitness=fitness, population=population, plot_graph=True)
     generation_best_fitness.append(best_fitness)
