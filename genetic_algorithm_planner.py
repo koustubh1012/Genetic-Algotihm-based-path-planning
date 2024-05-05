@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import math
-import heapq
 import cv2
 
 size = (30, 50)
@@ -23,6 +22,7 @@ goal = (29, 35)
 INITIAL_POPULATION_SIZE = 20
 NUMBER_OF_GENERATIONS = 10
 STEP_SIZE = 3
+FPS = 2
 generation_best_fitness = []
 
 class Node:
@@ -231,6 +231,8 @@ def create_initial_population(population_size=20, step_size=1, plot_paths = True
   return population
 
 def create_opencv_visualisation(parent_gen_size=INITIAL_POPULATION_SIZE, generation_gen_size=100):
+  fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+  video = cv2.VideoWriter("genetic.mp4", fourcc, FPS, (640, 480))
   for i in range(0, parent_gen_size+generation_gen_size):
     image = cv2.imread(f'plot_{i+1}.png')
     if i < parent_gen_size:
@@ -239,10 +241,7 @@ def create_opencv_visualisation(parent_gen_size=INITIAL_POPULATION_SIZE, generat
     else:
       fitness = generation_best_fitness[i-parent_gen_size]
       cv2.putText(image, f"Generation: {i-parent_gen_size+1} | Fitness: {fitness}",(10,40),cv2.FONT_HERSHEY_SIMPLEX,0.8, (0,0,0), 1, cv2.LINE_AA)
-
-    cv2.imshow("Genetic Algorithm",image)
-    cv2.waitKey(1)
-    cv2.destroyAllWindows()
+    video.write(image)
 
 population = create_initial_population(population_size=INITIAL_POPULATION_SIZE, step_size=STEP_SIZE, plot_paths=True)
 parent_gen_fitness = calcualte_fitness_of_population(population)
@@ -267,9 +266,6 @@ for gen in range (0,NUMBER_OF_GENERATIONS):
         population.append(offspring2)
       except:
         pass
-        # print(f"Failed for parent set {i}")
-        # plot(path=P1[i])
-        # plot(path=P2[i])
   else:
     NUMBER_OF_GENERATIONS = gen
     print(f"Termination at generation: {gen+1}")
