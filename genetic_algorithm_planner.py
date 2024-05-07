@@ -12,6 +12,7 @@ import numpy as np
 import random
 import math
 import cv2
+import copy
 
 size = (30, 50)
 # obstacles = [(5, 5, 10,10), (20, 30, 25, 45), (15, 0, 20, 5), (15, 17, 20, 22)]
@@ -108,8 +109,11 @@ def fitness_function(path):
     coordinates = [(node.x, node.y) for node in path]
     w1 = 3
     w2 = 1
+    w3 = 2
     euc_dist = 0
     angle_sum = 0
+    interference=0
+    safe_rad=8
     for i in range(len(coordinates)-1):
         x1, y1 = coordinates[i]
         x2, y2 = coordinates[i+1]
@@ -125,6 +129,15 @@ def fitness_function(path):
             heading2 = 360 + heading2
           angle = abs(heading2-heading1)
           angle_sum += angle
+          
+    for center_x,center_y in coordinates:
+      for (ox , oy, ex, ey) in obstacles:
+        for i in range(ox,ex):
+          for j in range(oy,ey):
+            if ((i-center_x)**2+(j-center_y)**2)<safe_rad**2:
+              interference+=1
+
+    F = w1*(1/(euc_dist))+ w2*1/(angle_sum)+w3*(1/interference)
 
     F = w1*(1/(euc_dist))+ w2*1/(angle_sum)
     return euc_dist, F
@@ -214,6 +227,16 @@ def crossoverpt(parent1,parent2):
 
     #Returning offsprings
     return offspring1,offspring2
+  
+def mutate_path(path):
+  num_nodes = len(path)
+  random_node = random.randint(0,num_nodes-1)
+  del_x = random.random()*2 - 1
+  del_y = random.random()*2 - 1
+  new_path = copy.deepcopy(path)
+  new_path[random_node].x += del_x
+  new_path[random_node].y += del_y
+  return new_path
 
 
 def elimination(fitness, population):
@@ -269,6 +292,10 @@ for gen in range (0,NUMBER_OF_GENERATIONS):
     best_fitness = plot_best_solution(fitness=fitness, population=population, plot_graph=True)
     generation_best_fitness.append(best_fitness)
     P1, P2 = best_selection(fitness, population)
+    mutation_1 = mutate_path(P1[0])
+    mutation_2 = mutate_path(P2[0])
+    population.append(mutation_1)
+    population.append(mutation_2)
     # P1, P2 = selection(fitness, population)
     # best_p1 = P1[0]
     # best_p2 = P2[0]
