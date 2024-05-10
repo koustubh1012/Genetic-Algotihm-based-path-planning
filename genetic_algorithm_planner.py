@@ -1,3 +1,12 @@
+#Authors
+#Final Project 5: ENPM 661 Planning for Autonomous Robots
+#1. FNU Koustubh  (dir-id: koustubh@umd.edu)
+#2. Keyur Borad   (dir-id: kborad@umd.edu)
+#3. Aryan Mishra  (dir-id: amishr17@umd.edu)
+
+
+
+
 import matplotlib.pyplot as plt # Import the matplotlib library
 import numpy as np # Import the numpy library
 import random # Import the random library
