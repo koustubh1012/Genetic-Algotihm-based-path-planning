@@ -15,6 +15,8 @@ python  genetic_algorithm_planner.py
 ```
 https://www.youtube.com/watch?v=TfJD4VSZm5k
 ```
+![Output](GeneticAlgorithmPathPlanner.gif)
+
 # Libraries Used
 1. numpy
 2. math
